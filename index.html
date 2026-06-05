@@ -33,7 +33,6 @@
     .hidden{display:none}
     .carItem{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:12px 0;gap:10px}
     .footer{background:#111;color:white;text-align:center;padding:18px;border-top:3px solid #d60000}
-    #qr canvas{background:white;padding:10px;border-radius:8px}
     @media(max-width:700px){
       .row,.grid,.contacts,.formgrid{grid-template-columns:1fr}
       .spz{font-size:28px;letter-spacing:4px}
@@ -330,3 +329,19 @@ function printQR(){
     w.document.close();
   },300);
 }
+
+async function loadFromUrl(){
+  const params = new URLSearchParams(location.search);
+  const spz = params.get("spz");
+  if(!spz) return;
+
+  const {data, error} = await db.from("auta").select("*").ilike("spz", spz).limit(1);
+  if(error){ console.error(error.message); return; }
+  if(data && data.length) showCar(data[0]);
+}
+
+loadFromUrl();
+</script>
+
+</body>
+</html>
