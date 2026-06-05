@@ -200,6 +200,7 @@ function renderForm(car){
   fields.forEach(([key,label])=>{
     if(key === "chladivo"){
       form.innerHTML += `<div><label>${label}</label><select id="f_${key}">
+        <option value="">Neuvedeno</option>
         <option ${car[key]==="R134a"?"selected":""}>R134a</option>
         <option ${car[key]==="R1234yf"?"selected":""}>R1234yf</option>
       </select></div>`;
@@ -263,15 +264,70 @@ async function loadCars(){
 }
 
 function createQR(){
+  if(!currentCar || !currentCar.spz || currentCar.spz === "NOVÁ SPZ"){
+    alert("Nejdříve vyberte nebo uložte vozidlo se správnou SPZ.");
+    return;
+  }
+
   const qr = document.getElementById("qr");
-  qr.innerHTML = "<h3>QR kód auta</h3><canvas id='qrCanvas'></canvas>";
-  const url = location.href.split("?")[0] + "?spz=" + encodeURIComponent(currentCar?.spz || "");
-  QRCode.toCanvas(document.getElementById("qrCanvas"), url, {width:180});
+  const url = location.origin + location.pathname + "?spz=" + encodeURIComponent(currentCar.spz);
+
+  qr.innerHTML = `
+    <h3>QR kód vozidla</h3>
+    <div id="qrPrintArea" style="width:260px;background:white;border:1px solid #ddd;border-radius:10px;padding:15px;text-align:center;">
+      <img src="logo.png" style="max-width:180px;margin-bottom:10px">
+      <canvas id="qrCanvas"></canvas>
+      <div style="margin-top:8px;font-size:13px;font-weight:bold;">${currentCar.spz}</div>
+      <div style="font-size:10px;color:#666;">Digitální servisní knížka</div>
+    </div>
+  `;
+
+  QRCode.toCanvas(document.getElementById("qrCanvas"), url, {
+    width:190,
+    margin:1
+  });
 }
 
 function printQR(){
+  if(!currentCar || !currentCar.spz || currentCar.spz === "NOVÁ SPZ"){
+    alert("Nejdříve vyberte nebo uložte vozidlo se správnou SPZ.");
+    return;
+  }
+
   createQR();
-  setTimeout(()=>window.print(),300);
+
+  setTimeout(()=>{
+    const content = document.getElementById("qrPrintArea").outerHTML;
+    const w = window.open("", "_blank");
+
+    w.document.write(`
+      <html>
+      <head>
+        <title>QR ${currentCar.spz}</title>
+        <style>
+          body{
+            margin:20px;
+            text-align:center;
+            font-family:Arial, sans-serif;
+          }
+          @media print{
+            body{margin:0;padding:0;}
+          }
+        </style>
+      </head>
+      <body>
+        ${content}
+        <script>
+          window.onload=function(){
+            window.print();
+          }
+        <\/script>
+      </body>
+      </html>
+    `);
+
+    w.document.close();
+  },300);
 }
 
 async function loadFromUrl(){
@@ -279,7 +335,8 @@ async function loadFromUrl(){
   const spz = params.get("spz");
   if(!spz) return;
 
-  const {data} = await db.from("auta").select("*").ilike("spz", spz).limit(1);
+  const {data, error} = await db.from("auta").select("*").ilike("spz", spz).limit(1);
+  if(error){ console.error(error.message); return; }
   if(data && data.length) showCar(data[0]);
 }
 
