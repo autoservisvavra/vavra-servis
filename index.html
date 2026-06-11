@@ -330,103 +330,139 @@ function printQR(){
 
   const url = getCarUrl();
   const spz = currentCar.spz;
-  const w = window.open("", "_blank");
+  const logoUrl = new URL("logo.png", location.href).href;
 
-  if(!w){
-    alert("Prohlížeč zablokoval nové okno.");
-    return;
-  }
+  const temp = document.createElement("div");
+  temp.style.position = "fixed";
+  temp.style.left = "-9999px";
+  document.body.appendChild(temp);
 
-  w.document.write(`
-    <html>
-    <head>
-      <title>QR ${spz}</title>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  new QRCode(temp, {
+    text: url,
+    width: 260,
+    height: 260
+  });
 
-      <style>
-        html,body{
-          margin:0;
-          padding:0;
-          width:100mm;
-          height:60mm;
-          background:white;
-          font-family:Arial,sans-serif;
-        }
+  setTimeout(()=>{
+    const qrImg = temp.querySelector("img") || temp.querySelector("canvas");
+    let qrSrc = "";
 
-        #label{
-          width:100mm;
-          height:60mm;
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          padding:6mm;
-          box-sizing:border-box;
-        }
+    if(qrImg.tagName.toLowerCase() === "canvas"){
+      qrSrc = qrImg.toDataURL("image/png");
+    } else {
+      qrSrc = qrImg.src;
+    }
 
-        .left{
-          width:42mm;
-          text-align:center;
-        }
+    document.body.removeChild(temp);
 
-        .left img{
-          max-width:35mm;
-          margin-bottom:3mm;
-        }
+    const w = window.open("", "_blank");
 
-        .plate{
-          font-size:18pt;
-          font-weight:bold;
-          margin-top:2mm;
-        }
+    if(!w){
+      alert("Prohlížeč zablokoval nové okno.");
+      return;
+    }
 
-        .small{
-          font-size:8pt;
-        }
+    w.document.write(`
+      <html>
+      <head>
+        <title>QR ${spz}</title>
+        <style>
+          *{box-sizing:border-box}
 
-        #printQrCanvas img,
-        #printQrCanvas canvas{
-          width:38mm !important;
-          height:38mm !important;
-        }
+          html,body{
+            margin:0;
+            padding:0;
+            width:100mm;
+            height:60mm;
+            background:white;
+            font-family:Arial,sans-serif;
+          }
 
-        @page{
-          size:100mm 60mm landscape;
-          margin:0;
-        }
-      </style>
-    </head>
+          #label{
+            width:100mm;
+            height:60mm;
+            display:flex;
+            flex-direction:row;
+            align-items:center;
+            justify-content:space-between;
+            padding:5mm 8mm;
+            background:white;
+            overflow:hidden;
+          }
 
-    <body>
-      <div id="label">
+          .left{
+            width:42mm;
+            text-align:center;
+          }
 
-        <div class="left">
-          <img src="logo.png">
-          <div class="plate">${spz}</div>
-          <div class="small">Digitální servisní knížka</div>
+          .left img{
+            max-width:36mm;
+            margin-bottom:5mm;
+          }
+
+          .plate{
+            font-size:20pt;
+            font-weight:900;
+            margin-bottom:2mm;
+          }
+
+          .small{
+            font-size:8pt;
+          }
+
+          .qr{
+            width:40mm;
+            height:40mm;
+          }
+
+          .qr img{
+            width:40mm;
+            height:40mm;
+            display:block;
+          }
+
+          @page{
+            size:100mm 60mm landscape;
+            margin:0;
+          }
+
+          @media print{
+            html,body{
+              margin:0;
+              padding:0;
+              width:100mm;
+              height:60mm;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <div id="label">
+          <div class="left">
+            <img src="${logoUrl}">
+            <div class="plate">${spz}</div>
+            <div class="small">Digitální servisní knížka</div>
+          </div>
+
+          <div class="qr">
+            <img src="${qrSrc}">
+          </div>
         </div>
 
-        <div id="printQrCanvas"></div>
+        <script>
+          window.onload=function(){
+            setTimeout(function(){
+              window.print();
+            }, 300);
+          };
+        <\/script>
+      </body>
+      </html>
+    `);
 
-      </div>
-
-      <script>
-        new QRCode(document.getElementById("printQrCanvas"),{
-          text:"${url}",
-          width:220,
-          height:220
-        });
-
-        window.onload=function(){
-          setTimeout(function(){
-            window.print();
-          },500);
-        };
-      <\/script>
-    </body>
-    </html>
-  `);
-
-  w.document.close();
+    w.document.close();
+  },500);
 }
 
 async function shareQR(){
