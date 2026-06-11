@@ -335,7 +335,6 @@ function printQR(){
   const temp = document.createElement("div");
   temp.style.position = "absolute";
   temp.style.left = "-9999px";
-
   document.body.appendChild(temp);
 
   new QRCode(temp,{
@@ -347,7 +346,6 @@ function printQR(){
   setTimeout(()=>{
 
     const qrCanvas = temp.querySelector("canvas");
-
     const qrImage = qrCanvas.toDataURL("image/png");
 
     document.body.removeChild(temp);
@@ -360,75 +358,65 @@ function printQR(){
       <title>${spz}</title>
 
       <style>
-
         html,body{
           margin:0;
           padding:0;
           background:white;
-          width:62mm;
-          height:100mm;
+          width:29mm;
+          height:42mm;
           overflow:hidden;
           font-family:Arial,sans-serif;
         }
 
         .label{
-          width:62mm;
-          height:100mm;
-
+          width:29mm;
+          height:42mm;
           display:flex;
           flex-direction:column;
-
           justify-content:center;
           align-items:center;
-
-          padding:3mm;
+          padding:1.5mm;
           box-sizing:border-box;
         }
 
         .logo{
-          width:42mm;
-          margin-bottom:4mm;
+          width:22mm;
+          margin-bottom:1.5mm;
         }
 
         .qr{
-          width:36mm;
-          height:36mm;
+          width:22mm;
+          height:22mm;
         }
 
         .spz{
-          margin-top:3mm;
-          font-size:18pt;
-          font-weight:bold;
+          margin-top:1.3mm;
+          font-size:11pt;
+          font-weight:900;
+          line-height:1;
         }
 
         .text{
-          font-size:8pt;
+          margin-top:0.8mm;
+          font-size:5.5pt;
           color:#555;
+          line-height:1;
         }
 
         @page{
-          size:62mm 100mm;
+          size:29mm 42mm;
           margin:0;
         }
-
       </style>
 
     </head>
 
     <body>
-
       <div class="label">
-
         <img class="logo" src="logo.png">
-
         <img class="qr" src="${qrImage}">
-
         <div class="spz">${spz}</div>
-
-        <div class="text">
-          Digitální servisní knížka
-        </div>
-
+        <div class="text">Digitální servisní knížka</div>
       </div>
 
       <script>
@@ -438,7 +426,6 @@ function printQR(){
           },500);
         }
       <\/script>
-
     </body>
     </html>
     `);
