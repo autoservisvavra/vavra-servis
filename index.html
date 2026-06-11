@@ -323,86 +323,129 @@ function createQR(){
 }
 
 function printQR(){
-  if(!currentCar || !currentCar.spz || currentCar.spz === "NOVÁ SPZ"){
-    alert("Nejdříve vyberte nebo uložte vozidlo se správnou SPZ.");
+
+  if(!currentCar || !currentCar.spz){
+    alert("Nejdříve vyber vozidlo.");
     return;
   }
 
-  createQR();
+  const url = getCarUrl();
+  const spz = currentCar.spz;
+
+  const temp = document.createElement("div");
+  temp.style.position = "absolute";
+  temp.style.left = "-9999px";
+
+  document.body.appendChild(temp);
+
+  new QRCode(temp,{
+    text:url,
+    width:300,
+    height:300
+  });
 
   setTimeout(()=>{
-    const content = document.getElementById("qrPrintArea").outerHTML;
-    const w = window.open("", "_blank");
 
-    if(!w){
-      alert("Prohlížeč zablokoval nové okno.");
-      return;
-    }
+    const qrCanvas = temp.querySelector("canvas");
+
+    const qrImage = qrCanvas.toDataURL("image/png");
+
+    document.body.removeChild(temp);
+
+    const w = window.open("","_blank");
 
     w.document.write(`
-      <html>
-      <head>
-        <title>QR ${currentCar.spz}</title>
-        <style>
-          html, body{
-            margin:0;
-            padding:0;
-            width:100mm;
-            height:60mm;
-            background:white;
-            font-family:Arial, sans-serif;
-            overflow:hidden;
-          }
+    <html>
+    <head>
+      <title>${spz}</title>
 
-          body{
-            display:flex;
-            align-items:center;
-            justify-content:center;
-          }
+      <style>
 
-          #qrPrintArea{
-            transform:rotate(90deg);
-            transform-origin:center center;
-            width:54mm !important;
-            padding:4mm !important;
-            border:none !important;
-            margin:0 !important;
-            background:white !important;
-          }
+        html,body{
+          margin:0;
+          padding:0;
+          background:white;
+          width:62mm;
+          height:100mm;
+          overflow:hidden;
+          font-family:Arial,sans-serif;
+        }
 
-          #qrPrintArea img{
-            max-width:26mm !important;
-            margin-bottom:2mm !important;
-          }
+        .label{
+          width:62mm;
+          height:100mm;
 
-          #qrCanvas img,
-          #qrCanvas canvas{
-            width:38mm !important;
-            height:38mm !important;
-          }
+          display:flex;
+          flex-direction:column;
 
-          @page{
-            size:100mm 60mm landscape;
-            margin:0;
-          }
-        </style>
-      </head>
-      <body>
-        ${content}
+          justify-content:center;
+          align-items:center;
 
-        <script>
-          window.onload=function(){
-            setTimeout(function(){
-              window.print();
-            },500);
-          };
-        <\/script>
-      </body>
-      </html>
+          padding:3mm;
+          box-sizing:border-box;
+        }
+
+        .logo{
+          width:42mm;
+          margin-bottom:4mm;
+        }
+
+        .qr{
+          width:36mm;
+          height:36mm;
+        }
+
+        .spz{
+          margin-top:3mm;
+          font-size:18pt;
+          font-weight:bold;
+        }
+
+        .text{
+          font-size:8pt;
+          color:#555;
+        }
+
+        @page{
+          size:62mm 100mm;
+          margin:0;
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <div class="label">
+
+        <img class="logo" src="logo.png">
+
+        <img class="qr" src="${qrImage}">
+
+        <div class="spz">${spz}</div>
+
+        <div class="text">
+          Digitální servisní knížka
+        </div>
+
+      </div>
+
+      <script>
+        window.onload=function(){
+          setTimeout(()=>{
+            window.print();
+          },500);
+        }
+      <\/script>
+
+    </body>
+    </html>
     `);
 
     w.document.close();
-  },300);
+
+  },500);
 }
 
 async function shareQR(){
