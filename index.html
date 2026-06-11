@@ -328,33 +328,10 @@ function printQR(){
     return;
   }
 
-  const url = getCarUrl();
-  const spz = currentCar.spz;
-  const logoUrl = new URL("logo.png", location.href).href;
-
-  const temp = document.createElement("div");
-  temp.style.position = "fixed";
-  temp.style.left = "-9999px";
-  document.body.appendChild(temp);
-
-  new QRCode(temp, {
-    text: url,
-    width: 260,
-    height: 260
-  });
+  createQR();
 
   setTimeout(()=>{
-    const qrImg = temp.querySelector("img") || temp.querySelector("canvas");
-    let qrSrc = "";
-
-    if(qrImg.tagName.toLowerCase() === "canvas"){
-      qrSrc = qrImg.toDataURL("image/png");
-    } else {
-      qrSrc = qrImg.src;
-    }
-
-    document.body.removeChild(temp);
-
+    const content = document.getElementById("qrPrintArea").outerHTML;
     const w = window.open("", "_blank");
 
     if(!w){
@@ -365,96 +342,59 @@ function printQR(){
     w.document.write(`
       <html>
       <head>
-        <title>QR ${spz}</title>
+        <title>QR ${currentCar.spz}</title>
         <style>
-          *{box-sizing:border-box}
-
-          html,body{
+          html, body{
             margin:0;
             padding:0;
             width:100mm;
             height:60mm;
             background:white;
-            font-family:Arial,sans-serif;
-          }
-
-          #label{
-            width:100mm;
-            height:60mm;
-            display:flex;
-            flex-direction:row;
-            align-items:center;
-            justify-content:space-between;
-            padding:5mm 8mm;
-            background:white;
+            font-family:Arial, sans-serif;
             overflow:hidden;
           }
 
-          .left{
-            width:42mm;
-            text-align:center;
+          body{
+            display:flex;
+            align-items:center;
+            justify-content:center;
           }
 
-          .left img{
-            max-width:36mm;
-            margin-bottom:5mm;
+          #qrPrintArea{
+            transform:rotate(90deg);
+            transform-origin:center center;
+            width:54mm !important;
+            padding:4mm !important;
+            border:none !important;
+            margin:0 !important;
+            background:white !important;
           }
 
-          .plate{
-            font-size:20pt;
-            font-weight:900;
-            margin-bottom:2mm;
+          #qrPrintArea img{
+            max-width:26mm !important;
+            margin-bottom:2mm !important;
           }
 
-          .small{
-            font-size:8pt;
-          }
-
-          .qr{
-            width:40mm;
-            height:40mm;
-          }
-
-          .qr img{
-            width:40mm;
-            height:40mm;
-            display:block;
+          #qrCanvas img,
+          #qrCanvas canvas{
+            width:38mm !important;
+            height:38mm !important;
           }
 
           @page{
             size:100mm 60mm landscape;
             margin:0;
           }
-
-          @media print{
-            html,body{
-              margin:0;
-              padding:0;
-              width:100mm;
-              height:60mm;
-            }
-          }
         </style>
       </head>
-
       <body>
-        <div id="label">
-          <div class="left">
-            <img src="${logoUrl}">
-            <div class="plate">${spz}</div>
-            <div class="small">Digitální servisní knížka</div>
-          </div>
-
-          <div class="qr">
-            <img src="${qrSrc}">
-          </div>
-        </div>
+        ${content}
 
         <script>
           window.onload=function(){
             setTimeout(function(){
               window.print();
-            }, 300);
+            },500);
           };
         <\/script>
       </body>
@@ -462,7 +402,7 @@ function printQR(){
     `);
 
     w.document.close();
-  },500);
+  },300);
 }
 
 async function shareQR(){
