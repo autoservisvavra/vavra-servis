@@ -333,7 +333,7 @@ function printQR(){
   const w = window.open("", "_blank");
 
   if(!w){
-    alert("Prohlížeč zablokoval nové okno. Povolte vyskakovací okna nebo použijte tlačítko Sdílet QR.");
+    alert("Prohlížeč zablokoval nové okno.");
     return;
   }
 
@@ -342,28 +342,25 @@ function printQR(){
     <head>
       <title>QR ${spz}</title>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-      <style>
-        *{box-sizing:border-box}
 
+      <style>
         html,body{
           margin:0;
           padding:0;
           width:100mm;
           height:60mm;
-          font-family:Arial,sans-serif;
           background:white;
+          font-family:Arial,sans-serif;
         }
 
         #label{
           width:100mm;
           height:60mm;
           display:flex;
-          flex-direction:row;
           align-items:center;
           justify-content:space-between;
-          padding:5mm 7mm;
-          background:white;
-          overflow:hidden;
+          padding:6mm;
+          box-sizing:border-box;
         }
 
         .left{
@@ -372,27 +369,18 @@ function printQR(){
         }
 
         .left img{
-          max-width:34mm;
-          margin-bottom:4mm;
+          max-width:35mm;
+          margin-bottom:3mm;
         }
 
         .plate{
-          font-size:20pt;
-          font-weight:900;
-          line-height:1.1;
-          margin-bottom:2mm;
+          font-size:18pt;
+          font-weight:bold;
+          margin-top:2mm;
         }
 
         .small{
           font-size:8pt;
-        }
-
-        #printQrCanvas{
-          width:38mm;
-          height:38mm;
-          display:flex;
-          align-items:center;
-          justify-content:center;
         }
 
         #printQrCanvas img,
@@ -405,20 +393,12 @@ function printQR(){
           size:100mm 60mm landscape;
           margin:0;
         }
-
-        @media print{
-          html,body{
-            width:100mm;
-            height:60mm;
-            margin:0;
-            padding:0;
-          }
-        }
       </style>
     </head>
 
     <body>
       <div id="label">
+
         <div class="left">
           <img src="logo.png">
           <div class="plate">${spz}</div>
@@ -426,19 +406,20 @@ function printQR(){
         </div>
 
         <div id="printQrCanvas"></div>
+
       </div>
 
       <script>
-        new QRCode(document.getElementById("printQrCanvas"), {
-          text: "${url}",
-          width: 220,
-          height: 220
+        new QRCode(document.getElementById("printQrCanvas"),{
+          text:"${url}",
+          width:220,
+          height:220
         });
 
-        window.onload = function(){
+        window.onload=function(){
           setTimeout(function(){
             window.print();
-          }, 700);
+          },500);
         };
       <\/script>
     </body>
@@ -446,50 +427,6 @@ function printQR(){
   `);
 
   w.document.close();
-}
-
-  createQR();
-
-  setTimeout(()=>{
-    const content = document.getElementById("qrPrintArea").outerHTML;
-    const w = window.open("", "_blank");
-
-    if(!w){
-      alert("Prohlížeč zablokoval nové okno. Povolte vyskakovací okna nebo použijte tlačítko Sdílet QR.");
-      return;
-    }
-
-    w.document.write(`
-      <html>
-      <head>
-        <title>QR ${currentCar.spz}</title>
-        <style>
-          body{
-            margin:0;
-            padding:10px;
-            text-align:center;
-            font-family:Arial, sans-serif;
-          }
-          @media print{
-            body{margin:0;padding:0;}
-          }
-        </style>
-      </head>
-      <body>
-        ${content}
-        <br>
-        <button onclick="window.print()" style="font-size:18px;padding:12px 20px;">Tisknout</button>
-        <script>
-          window.onload=function(){
-            setTimeout(function(){ window.print(); }, 500);
-          }
-        <\/script>
-      </body>
-      </html>
-    `);
-
-    w.document.close();
-  },300);
 }
 
 async function shareQR(){
